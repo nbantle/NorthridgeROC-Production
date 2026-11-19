@@ -47,7 +47,7 @@
   function quarterOf(d) { return Math.floor(d.getMonth() / 3) + 1; }
 
   /* --------------------------------------------------------------- router */
-  var ROUTES = ["home", "boot", "schedule", "tasks", "troubleshooting"];
+  var ROUTES = ["home", "boot", "schedule", "tasks", "troubleshooting", "support"];
   function currentRoute() {
     var r = location.hash.replace("#", "");
     return ROUTES.indexOf(r) >= 0 ? r : "home";
@@ -60,7 +60,7 @@
       if (a.dataset.route === route) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    var titles = { home: "", boot: "Boot Up/Down", schedule: "Schedule", tasks: "Tasks", troubleshooting: "Troubleshooting" };
+    var titles = { home: "", boot: "Boot Up/Down", schedule: "Schedule", tasks: "Tasks", troubleshooting: "Troubleshooting", support: "Support" };
     document.title = (titles[route] ? titles[route] + " · " : "") + "ROC Production Hub";
     RENDER[route]();
     icons();
@@ -120,6 +120,7 @@
         '<i data-lucide="rotate-ccw"></i>' + (confirmingReset ? "Tap again to clear all" : "Reset checklist") + "</button></div>" +
         '<p class="footnote">Checks are saved on this device only.</p>';
     }
+    html += supportPrompt("boot");
     view.innerHTML = html;
   }
 
@@ -213,7 +214,7 @@
       html += "</div>";
     });
     html += '</div><p class="footnote">Copied from the Companion triggers on ' + esc(SCHED.updated) +
-      ". If a trigger changes in Companion, update it here too.</p>";
+      ". If a trigger changes in Companion, update it here too.</p>" + supportPrompt("schedule");
     view.innerHTML = html;
   }
 
@@ -297,7 +298,7 @@
       if (!list.length) html += '<div class="check-row"><span></span><div class="sub">No ' + P.label.toLowerCase() + " tasks for this team.</div><span></span></div>";
       html += "</div>";
     });
-    html += '<p class="footnote">Checks are saved on this device only.</p>';
+    html += '<p class="footnote">Checks are saved on this device only.</p>' + supportPrompt("tasks");
     view.innerHTML = html;
   }
 
@@ -310,7 +311,7 @@
       "<p>Search by what you're seeing, then work through the steps in order.</p></div>";
     if (!guides.length) {
       html += '<div class="card empty" style="margin-top:24px"><div class="tile-icon"><i data-lucide="wrench"></i></div>' +
-        "<h3>No guides yet</h3><p>Troubleshooting guides will show up here, grouped by system: audio, video, lighting, stream and network.</p></div>";
+        "<h3>No guides yet</h3><p>Troubleshooting guides will show up here, grouped by system: audio, video, lighting, stream and network.</p></div>" + supportPrompt("troubleshooting", "Have a problem that isn't here?");
       view.innerHTML = html;
       return;
     }
@@ -320,7 +321,8 @@
       '<div class="filters" role="group" aria-label="System">' +
       ["all"].concat(systems).map(function (s) {
         return '<button type="button" class="chip" data-system="' + esc(s) + '" aria-pressed="' + (tsSystem === s) + '">' + (s === "all" ? "All" : esc(s)) + "</button>";
-      }).join("") + '</div><div class="section-head"><h2>Guides</h2><span class="meta" id="ts-count"></span></div><div class="guides" id="ts-list"></div>';
+      }).join("") + '</div><div class="section-head"><h2>Guides</h2><span class="meta" id="ts-count"></span></div><div class="guides" id="ts-list"></div>' +
+      supportPrompt("troubleshooting", "Didn't fix it, or your problem isn't here?");
     view.innerHTML = html;
     renderGuideList();
   }
@@ -408,11 +410,89 @@
     html += '<div class="section-head"><h2>Sections</h2></div><div class="home-grid">' + tiles.map(function (t) {
       return '<a class="card tile" href="' + t.href + '"><div class="tile-icon"><i data-lucide="' + t.icon + '"></i></div>' +
         "<h3>" + t.title + "</h3><p>" + t.text + '</p><span class="status">' + t.status + "</span></a>";
-    }).join("") + "</div>";
+    }).join("") + "</div>" + supportPrompt("general", "Have a question or need something added?");
     view.innerHTML = html;
   }
 
-  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, tasks: renderTasks, troubleshooting: renderTroubleshooting };
+  /* ============================================================= SUPPORT */
+  var SUP = ROC.support;
+  var SECTIONS = [["general", "General / other"], ["boot", "Boot Up/Down"], ["schedule", "Automation Schedule"],
+    ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
+  var supportForm = { type: SUP.types[0].id, section: "general", name: store.get("roc-support-name", ""), details: "" };
+  var supportSent = null;
+
+  function supportAddress() { return SUP.to.join("@"); }
+  function supportType() { return SUP.types.filter(function (t) { return t.id === supportForm.type; })[0] || SUP.types[0]; }
+
+  function supportPrompt(from, lead) {
+    return '<a class="card support-prompt" href="#support" data-support-from="' + from + '">' +
+      '<span class="tile-icon"><i data-lucide="message-circle-question"></i></span>' +
+      "<span><strong>" + esc(lead || "Question, or something missing?") + '</strong><span class="sub">Send ' + esc(SUP.contactName) + " a request.</span></span>" +
+      '<i data-lucide="chevron-right"></i></a>';
+  }
+
+  function renderSupport() {
+    var html = '<div class="page-head"><span class="eyebrow">Support</span><h1>Ask a Question</h1>' +
+      "<p>Send " + esc(SUP.contactName) + " a technical question, report something that isn't working, or ask for something to be added to this app.</p></div>";
+    if (supportSent) {
+      html += '<div class="card support-done"><div class="tile-icon"><i data-lucide="mail-check"></i></div>' +
+        "<h3>Almost done</h3><p>Your email app should have opened with your request filled in. <b>Press Send there to finish.</b></p>" +
+        '<p class="sub">Email app didn\'t open? Copy your request and email it to <b>' + esc(supportAddress()) + "</b>.</p>" +
+        '<div class="form-foot"><button type="button" class="ghost" data-copy="request"><i data-lucide="copy"></i>Copy request</button>' +
+        '<button type="button" class="ghost" data-copy="address"><i data-lucide="copy"></i>Copy address</button>' +
+        '<button type="button" class="ghost" data-support-new><i data-lucide="square-pen"></i>Write another</button>' +
+        '<span class="meta" id="copy-status" role="status"></span></div></div>';
+      view.innerHTML = html;
+      return;
+    }
+    var t = supportType();
+    html += '<form class="card support-form" id="support-form" novalidate>' +
+      '<fieldset><legend class="eyebrow">What do you need?</legend><div class="type-grid">' +
+      SUP.types.map(function (o) {
+        return '<label class="type-option"><input type="radio" name="sup-type" value="' + o.id + '"' + (o.id === t.id ? " checked" : "") + ">" +
+          '<span><i data-lucide="' + o.icon + '"></i>' + esc(o.label) + "</span></label>";
+      }).join("") + "</div></fieldset>" +
+      '<label class="field" for="sup-section"><span class="eyebrow">Which part of the app?</span><select id="sup-section">' +
+      SECTIONS.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === supportForm.section ? " selected" : "") + ">" + s[1] + "</option>"; }).join("") +
+      "</select></label>" +
+      '<label class="field" for="sup-name"><span class="eyebrow">Your name</span><input id="sup-name" type="text" autocomplete="name" value="' + esc(supportForm.name) + '"></label>' +
+      '<label class="field" for="sup-details"><span class="eyebrow">Details</span><textarea id="sup-details" rows="6" placeholder="' + esc(t.placeholder) + '">' + esc(supportForm.details) + "</textarea></label>" +
+      '<p class="form-error" id="sup-error" role="alert" hidden></p>' +
+      '<div class="form-foot"><button class="btn-primary" type="submit"><i data-lucide="send"></i>Write email</button>' +
+      '<span class="sub">Opens your email app with everything filled in. You still press Send.</span></div></form>';
+    view.innerHTML = html;
+  }
+
+  function buildSupportEmail() {
+    var t = supportType();
+    var section = SECTIONS.filter(function (s) { return s[0] === supportForm.section; })[0][1];
+    var firstLine = supportForm.details.trim().split(/\n/)[0];
+    if (firstLine.length > 60) firstLine = firstLine.slice(0, 57).trim() + "...";
+    var subject = SUP.subjectPrefix + " " + t.label + ": " + firstLine;
+    var body = supportForm.details.trim() + "\n\n---\nFrom: " + supportForm.name.trim() +
+      "\nType: " + t.label + "\nSection: " + section +
+      "\nSent from the ROC Production Hub, " + new Date().toLocaleString();
+    return { subject: subject, body: body };
+  }
+
+  function copyText(text) {
+    var status = document.getElementById("copy-status");
+    function done(ok) { if (status) status.textContent = ok ? "Copied" : "Couldn't copy. Select the text and copy it yourself."; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(fallbackCopy(text)); });
+    } else { done(fallbackCopy(text)); }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
 
   /* ============================================================== EVENTS */
   view.addEventListener("change", function (e) {
@@ -470,6 +550,15 @@
       teamFilter = el.dataset.team;
       store.set("roc-team-filter", teamFilter);
       render();
+    } else if ((el = e.target.closest("[data-support-from]"))) {
+      supportForm.section = el.dataset.supportFrom;
+      supportSent = null;
+    } else if ((el = e.target.closest("[data-copy]"))) {
+      copyText(el.dataset.copy === "address" ? supportAddress()
+        : "To: " + supportAddress() + "\nSubject: " + supportSent.subject + "\n\n" + supportSent.body);
+    } else if ((el = e.target.closest("[data-support-new]"))) {
+      supportSent = null; supportForm.details = "";
+      render();
     } else if ((el = e.target.closest("[data-open-guide]"))) {
       openGuide(el.dataset.openGuide);
     } else if ((el = e.target.closest("[data-system]"))) {
@@ -480,7 +569,37 @@
   });
 
   view.addEventListener("input", function (e) {
-    if (e.target.id === "ts-search") { tsQuery = e.target.value; renderGuideList(); }
+    var t = e.target;
+    if (t.id === "ts-search") { tsQuery = t.value; renderGuideList(); }
+    else if (t.id === "sup-name") supportForm.name = t.value;
+    else if (t.id === "sup-details") supportForm.details = t.value;
+  });
+  view.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.name === "sup-type") {
+      supportForm.type = t.value;
+      var d = document.getElementById("sup-details");
+      if (d) d.placeholder = supportType().placeholder;
+    } else if (t.id === "sup-section") supportForm.section = t.value;
+  });
+  view.addEventListener("submit", function (e) {
+    if (e.target.id !== "support-form") return;
+    e.preventDefault();
+    var err = document.getElementById("sup-error");
+    var missing = !supportForm.name.trim() ? "sup-name" : !supportForm.details.trim() ? "sup-details" : null;
+    if (missing) {
+      err.textContent = missing === "sup-name" ? "Add your name so " + SUP.contactName + " knows who to reply to."
+        : "Add a few details about what you need.";
+      err.hidden = false;
+      document.getElementById(missing).focus();
+      return;
+    }
+    store.set("roc-support-name", supportForm.name.trim());
+    supportSent = buildSupportEmail();
+    var href = "mailto:" + supportAddress() + "?subject=" + encodeURIComponent(supportSent.subject) +
+      "&body=" + encodeURIComponent(supportSent.body);
+    render();
+    window.location.href = href;
   });
 
   // Keep "next automation" and period labels fresh while the app sits open.
@@ -489,7 +608,7 @@
     if (route === "schedule" || route === "home") render();
   }, 60000);
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden && route !== "troubleshooting") render();
+    if (!document.hidden && route !== "troubleshooting" && route !== "support") render();
   });
 
   render();
