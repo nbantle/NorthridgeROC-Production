@@ -302,7 +302,7 @@
   }
 
   /* ===================================================== TROUBLESHOOTING */
-  var tsQuery = "", tsSystem = "all";
+  var tsQuery = "", tsSystem = "all", tsOpen = null;
 
   function renderTroubleshooting() {
     var guides = ROC.troubleshooting || [];
@@ -330,20 +330,55 @@
     var list = (ROC.troubleshooting || []).filter(function (g) {
       if (tsSystem !== "all" && g.system !== tsSystem) return false;
       if (!q) return true;
-      return [g.title, g.symptoms, g.system].concat(g.steps || []).join(" ").toLowerCase().indexOf(q) >= 0;
+      var text = [g.title, g.symptoms, g.info, g.system, g.escalate].concat((g.steps || []).map(function (s) {
+        return typeof s === "string" ? s : [s.text, s.warn].join(" ");
+      })).join(" ").replace(/<[^>]+>/g, "");
+      return text.toLowerCase().indexOf(q) >= 0;
     });
     var el = document.getElementById("ts-list");
     if (!el) return;
     document.getElementById("ts-count").textContent = list.length + (list.length === 1 ? " guide" : " guides");
     el.innerHTML = list.length ? list.map(function (g) {
-      return '<details class="guide card"><summary><div><span class="eyebrow">' + esc(g.system) + "</span><h3>" + esc(g.title) + "</h3></div>" +
+      return '<details class="guide card" id="guide-' + esc(g.id) + '"' + (g.id === tsOpen ? " open" : "") + ">" +
+        '<summary><div><span class="eyebrow">' + esc(g.system) + "</span><h3>" + esc(g.title) + "</h3></div>" +
         '<i data-lucide="chevron-down"></i></summary><div class="guide-body">' +
-        (g.symptoms ? '<p class="sub">' + esc(g.symptoms) + "</p>" : "") +
-        "<ol>" + (g.steps || []).map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ol>" +
-        (g.escalate ? '<p><span class="eyebrow">Still broken?</span><br>' + esc(g.escalate) + "</p>" : "") +
+        (g.symptoms ? '<p class="symptoms">' + g.symptoms + "</p>" : "") +
+        (g.info || g.image ? '<div class="info">' + (g.info ? "<p>" + g.info + "</p>" : "") + (g.image ? figure(g.image) : "") + "</div>" : "") +
+        '<ol class="fix-steps">' + (g.steps || []).map(stepHtml).join("") + "</ol>" +
+        (g.escalate ? '<div class="escalate"><i data-lucide="phone"></i><div><span class="eyebrow">Still broken?</span><p>' + esc(g.escalate) + "</p></div></div>" : "") +
         "</div></details>";
     }).join("") : '<div class="card empty"><p>No guides match that search.</p></div>';
     icons();
+  }
+
+  function guideById(id) {
+    return (ROC.troubleshooting || []).filter(function (g) { return g.id === id; })[0];
+  }
+  function figure(img) {
+    return '<figure><a href="' + esc(img.src) + '" target="_blank" rel="noopener" aria-label="Open full-size picture">' +
+      '<img src="' + esc(img.src) + '" alt="' + esc(img.alt || "") + '" loading="lazy"></a>' +
+      "<figcaption>" + (img.caption ? esc(img.caption) + " · " : "") + "Tap to enlarge</figcaption></figure>";
+  }
+  function stepHtml(s) {
+    if (typeof s === "string") return "<li>" + s + "</li>";
+    var h = "<li>";
+    if (s.see) {
+      var g = guideById(s.see);
+      h += 'Check <button type="button" class="guide-link" data-open-guide="' + esc(s.see) + '">' + esc(g ? g.title : s.see) + "</button> first.";
+    }
+    if (s.text) h += (s.see ? " " : "") + s.text;
+    if (s.warn) h += '<div class="warn"><i data-lucide="triangle-alert"></i><span>' + s.warn + "</span></div>";
+    if (s.image) h += figure(s.image);
+    return h + "</li>";
+  }
+  function openGuide(id) {
+    tsOpen = id; tsQuery = ""; tsSystem = "all";
+    var search = document.getElementById("ts-search");
+    if (search) search.value = "";
+    document.querySelectorAll("[data-system]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.system === "all")); });
+    renderGuideList();
+    var el = document.getElementById("guide-" + id);
+    if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); el.querySelector("summary").focus({ preventScroll: true }); }
   }
 
   /* ================================================================ HOME */
@@ -435,6 +470,8 @@
       teamFilter = el.dataset.team;
       store.set("roc-team-filter", teamFilter);
       render();
+    } else if ((el = e.target.closest("[data-open-guide]"))) {
+      openGuide(el.dataset.openGuide);
     } else if ((el = e.target.closest("[data-system]"))) {
       tsSystem = el.dataset.system;
       document.querySelectorAll("[data-system]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === el)); });
