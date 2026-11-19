@@ -359,7 +359,6 @@ figcaption { font-size: 13px; color: var(--muted); }
 .edit-group > .sub { margin: -4px 0 0; }
 .edit-block-note { margin: -8px 0 0; }
 .edit-block-body { display: grid; gap: 18px; }
-.edit-block.is-off .edit-block-body { opacity: 0.5; }
 .copy-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
 .copy-line code {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px;
@@ -372,8 +371,6 @@ figcaption { font-size: 13px; color: var(--muted); }
   font-size: 14px; font-weight: 500; text-decoration: underline; text-decoration-color: var(--gold-ink); text-underline-offset: 3px;
 }
 .item-link svg { width: 14px; height: 14px; color: var(--gold-ink); }
-.none-toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 16px; }
-.none-toggle .box { margin: 0; flex: none; }
 
 /* ---- Support ------------------------------------------------------------ */
 .support-prompt {

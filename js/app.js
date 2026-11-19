@@ -393,8 +393,7 @@
     var ew = editsWeek(now), ec = editsCounts(ew);
     html += '<div class="section-head"><h2>Sunday edits</h2><a class="meta" href="#edits">Open edits</a></div>' +
       '<a class="card meter" href="#edits"><span class="eyebrow">Edits for Sunday, ' + MON_SHORT[ew.sunday.getMonth()] + " " + ew.sunday.getDate() + "</span>" +
-      '<span class="meter-count">' + ec.done + " <small>of " + ec.total + " done" +
-      (ew.st.noBaptisms ? " · no baptisms" : "") + "</small></span>" +
+      '<span class="meter-count">' + ec.done + " <small>of " + ec.total + " done</small></span>" +
       '<div class="progress" aria-hidden="true"><span style="width:' + (ec.total ? (ec.done / ec.total) * 100 : 0) + '%"></span></div></a>';
 
     html += '<div class="section-head"><h2>Recurring tasks</h2><a class="meta" href="#tasks">Open tasks</a></div><div class="meters">';
@@ -423,7 +422,7 @@
 
   /* ======================================================== SUNDAY EDITS */
   var EDITS_KEY = "roc-edits-v1";
-  var editsState = store.get(EDITS_KEY, {}); // { "YYYY-MM-DD" (Sunday): { checks, noBaptisms } }
+  var editsState = store.get(EDITS_KEY, {}); // { "YYYY-MM-DD" (Sunday): { checks } }
 
   function sundayOf(d) {
     var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -434,7 +433,7 @@
     var s = sundayOf(now);
     var key = s.getFullYear() + "-" + pad(s.getMonth() + 1) + "-" + pad(s.getDate());
     if (!editsState[key]) {
-      editsState[key] = { checks: {}, noBaptisms: false };
+      editsState[key] = { checks: {} };
       // keep the last 8 weeks so storage doesn't grow forever
       Object.keys(editsState).sort().slice(0, -8).forEach(function (k) { delete editsState[k]; });
     }
@@ -454,9 +453,10 @@
   }
   function editsCounts(w) {
     var ids = editItems(ROC.edits.message).map(function (i) { return i.id; });
-    if (!w.st.noBaptisms) {
-      editItems(ROC.edits.baptism).forEach(function (i) { ids.push("bap:" + i.id); });
-    }
+    // Baptism steps only count once someone starts them, so weeks
+    // without baptisms can still reach "all done".
+    var bapIds = editItems(ROC.edits.baptism).map(function (i) { return "bap:" + i.id; });
+    if (bapIds.some(function (id) { return !!w.st.checks[id]; })) ids = ids.concat(bapIds);
     return { done: ids.filter(function (id) { return !!w.st.checks[id]; }).length, total: ids.length };
   }
 
@@ -497,11 +497,9 @@
     html += '<section class="edit-block card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="mic"></i></span><h2>Message</h2></div>' +
       editGroups(ROC.edits.message, { year: year }, st, "") + "</section>";
 
-    html += '<section class="edit-block card' + (st.noBaptisms ? " is-off" : "") + '">' +
+    html += '<section class="edit-block card">' +
       '<div class="edit-block-head"><span class="tile-icon"><i data-lucide="droplets"></i></span><h2>Baptisms</h2></div>' +
       '<p class="sub edit-block-note">Repeat these steps for each baptism.</p>' +
-      '<label class="none-toggle"><input type="checkbox" class="box" id="no-baptisms"' + (st.noBaptisms ? " checked" : "") + ">" +
-      "<span>No baptisms this week</span></label>" +
       '<div class="edit-block-body">' + editGroups(ROC.edits.baptism, { year: year }, st, "bap:") + "</div></section>";
     html += '<p class="footnote">Checks are saved on this device only.</p>' + supportPrompt("edits");
     view.innerHTML = html;
@@ -691,9 +689,6 @@
       var wk = editsWeek(new Date());
       if (t.checked) wk.st.checks[t.dataset.edit] = new Date().toISOString();
       else delete wk.st.checks[t.dataset.edit];
-      saveEdits(); render();
-    } else if (t.id === "no-baptisms") {
-      editsWeek(new Date()).st.noBaptisms = t.checked;
       saveEdits(); render();
     }
   });
