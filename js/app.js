@@ -471,6 +471,10 @@
     if (item.note) h += '<div class="sub">' + fillText(item.note, ctx, true) + "</div>";
     if (item.path) h += copyLine(fillText(item.path, ctx, false));
     if (item.copy) h += copyLine(fillText(item.copy, ctx, false));
+    if (item.link && item.link.href) {
+      h += '<a class="item-link" href="' + esc(item.link.href) + '" target="_blank" rel="noopener">' +
+        esc(item.link.label || "Open link") + '<i data-lucide="external-link"></i></a>';
+    }
     if (at) h += '<div class="sub">Done ' + fmtShortDate(at) + "</div>";
     return h + "</div><span></span></div>";
   }

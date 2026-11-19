@@ -12,6 +12,7 @@
     note:  optional small line under the step
     path:  optional folder path, shown with a Copy button
     copy:  optional text to copy, shown with a Copy button
+    link:  optional { href, label } shown as a link that opens in a new tab
 
   Placeholders: {year} becomes the current year,
                 {name} becomes the baptism's full name.
@@ -37,7 +38,9 @@ ROC.edits = {
       { id: "msg-yt-monetization", text: "Turn monetization <b>on</b>" },
       { id: "msg-yt-playlist-recent", text: "Add to the <b>Recent Uploads from Northridge Church</b> playlist" },
       { id: "msg-yt-playlist-series", text: "Add to the <b>current series</b> playlist" },
-      { id: "msg-yt-thumbnail", text: "Add the thumbnail" },
+      { id: "msg-yt-thumbnail", text: "Add the thumbnail",
+        note: "Thumbnails are in this folder, inside the current series folder:",
+        path: "Google Drive › Shared drives › Graphics › Sermon Graphics" },
       { id: "msg-yt-public", text: "Set visibility to <b>Public</b>" }
     ] }
   ],

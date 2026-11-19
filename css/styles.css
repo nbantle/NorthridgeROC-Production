@@ -367,6 +367,11 @@ figcaption { font-size: 13px; color: var(--muted); }
   overflow-wrap: anywhere; min-width: 0;
 }
 .ghost.small { padding: 6px 10px; font-size: 10px; }
+.item-link {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+  font-size: 14px; font-weight: 500; text-decoration: underline; text-decoration-color: var(--gold-ink); text-underline-offset: 3px;
+}
+.item-link svg { width: 14px; height: 14px; color: var(--gold-ink); }
 .none-toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 16px; }
 .none-toggle .box { margin: 0; flex: none; }
 .bap-add { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
