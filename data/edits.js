@@ -32,11 +32,11 @@ ROC.edits = {
         path: "Google Drive › Shared drives › Podcast › Message Audio › {year}" }
     ] },
     { title: "YouTube: once the upload finishes", note: "Open the new video in YouTube Studio.", items: [
-      { id: "msg-yt-title", text: "Update the title to the sermon name" },
-      { id: "msg-yt-communicator", text: "Add the sermon communicator" },
+      { id: "msg-yt-title", text: "Set the title to <b>Sermon Title | Communicator Name</b>" },
       { id: "msg-yt-description", text: "Update the sermon description" },
       { id: "msg-yt-monetization", text: "Turn monetization <b>on</b>" },
-      { id: "msg-yt-playlist", text: "Select the playlist" },
+      { id: "msg-yt-playlist-recent", text: "Add to the <b>Recent Uploads from Northridge Church</b> playlist" },
+      { id: "msg-yt-playlist-series", text: "Add to the <b>current series</b> playlist" },
       { id: "msg-yt-public", text: "Set visibility to <b>Public</b>" },
       { id: "msg-yt-thumbnail", text: "Add the thumbnail" }
     ] }
@@ -49,11 +49,12 @@ ROC.edits = {
       { id: "export-yt", text: "Export with the <b>Northridge MP4 + YouTube</b> preset" }
     ] },
     { title: "YouTube", items: [
-      { id: "yt-title", text: "Set the title to <b>{name} / Story of Life Change</b>",
-        copy: "{name} / Story of Life Change" },
+      { id: "yt-title", text: "Set the title to <b>{name} | Stories of Life Change</b>",
+        copy: "{name} | Stories of Life Change" },
       { id: "yt-public", text: "Set visibility to <b>Public</b>" },
       { id: "yt-monetization", text: "Turn monetization <b>on</b>" },
-      { id: "yt-playlist", text: "Add it to the right playlist" }
+      { id: "yt-playlist-recent", text: "Add to the <b>Recent Uploads from Northridge Church</b> playlist" },
+      { id: "yt-playlist-stories", text: "Add to the <b>Stories of Life Change</b> playlist" }
     ] }
   ]
 };
