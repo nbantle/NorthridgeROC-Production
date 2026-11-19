@@ -95,8 +95,8 @@ b, strong { font-family: var(--font-display); font-weight: 600; font-size: 0.9em
   padding-top: env(safe-area-inset-top, 0px);
 }
 .topbar-inner {
-  max-width: 1080px; margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  max-width: 1240px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding-block: 12px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -106,10 +106,10 @@ b, strong { font-family: var(--font-display); font-weight: 600; font-size: 0.9em
 .brand-text { display: grid; line-height: 1.15; }
 .brand-eyebrow { font-family: var(--font-display); font-weight: 600; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
 .brand-name { font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; }
-.topnav { display: flex; gap: 4px; }
+.topnav { display: flex; gap: 2px; }
 .topnav a {
-  text-decoration: none; padding: 8px 12px; border-radius: 4px;
-  font-family: var(--font-display); font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none; padding: 8px 9px; border-radius: 4px; white-space: nowrap;
+  font-family: var(--font-display); font-weight: 600; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase;
   color: var(--band-muted);
 }
 .topnav a:hover { color: var(--band-fg); }
@@ -136,12 +136,7 @@ b, strong { font-family: var(--font-display); font-weight: 600; font-size: 0.9em
 .tabbar svg { width: 22px; height: 22px; stroke-width: 1.75; }
 .tabbar a[aria-current="page"] { color: var(--gold); }
 
-@media (max-width: 1100px) {
-  .topbar-inner { gap: 16px; }
-  .topnav { gap: 0; }
-  .topnav a { padding: 8px 8px; font-size: 11px; letter-spacing: 0.06em; }
-}
-@media (max-width: 860px) {
+@media (max-width: 980px) {
   .topnav { display: none; }
   .tabbar { display: flex; }
   main.wrap { padding-bottom: calc(var(--tabbar-h) + 40px + env(safe-area-inset-bottom, 0px)); }
@@ -354,6 +349,29 @@ figcaption { font-size: 13px; color: var(--muted); }
 .empty { padding: 28px 22px; text-align: left; display: grid; gap: 8px; }
 .empty .tile-icon { margin-bottom: 4px; }
 .empty p { margin: 0; color: var(--muted); max-width: 52ch; }
+
+/* ---- Sunday edits ------------------------------------------------------- */
+.edit-block { margin-top: 16px; padding: 18px; display: grid; gap: 18px; }
+.edit-block-head { display: flex; align-items: center; gap: 12px; }
+.edit-block-head h2 { font-size: 16px; letter-spacing: 0.12em; flex: 1; }
+.edit-group { display: grid; gap: 8px; }
+.edit-group h3 { font-size: 12px; letter-spacing: 0.16em; color: var(--muted); }
+.edit-group > .sub { margin: -4px 0 0; }
+.baptism { display: grid; gap: 16px; padding-top: 18px; border-top: 1px solid var(--line); }
+.baptism-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.baptism-head h3 { font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
+.copy-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.copy-line code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px;
+  padding: 6px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--card);
+  overflow-wrap: anywhere; min-width: 0;
+}
+.ghost.small { padding: 6px 10px; font-size: 10px; }
+.none-toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 16px; }
+.none-toggle .box { margin: 0; flex: none; }
+.bap-add { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+.bap-add-row { display: flex; gap: 8px; }
+.bap-add-row input { flex: 1; min-width: 0; }
 
 /* ---- Support ------------------------------------------------------------ */
 .support-prompt {

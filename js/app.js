@@ -47,7 +47,7 @@
   function quarterOf(d) { return Math.floor(d.getMonth() / 3) + 1; }
 
   /* --------------------------------------------------------------- router */
-  var ROUTES = ["home", "boot", "schedule", "tasks", "troubleshooting", "support"];
+  var ROUTES = ["home", "boot", "schedule", "edits", "tasks", "troubleshooting", "support"];
   function currentRoute() {
     var r = location.hash.replace("#", "");
     return ROUTES.indexOf(r) >= 0 ? r : "home";
@@ -60,7 +60,7 @@
       if (a.dataset.route === route) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    var titles = { home: "", boot: "Boot Up/Down", schedule: "Schedule", tasks: "Tasks", troubleshooting: "Troubleshooting", support: "Support" };
+    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", tasks: "Tasks", troubleshooting: "Troubleshooting", support: "Support" };
     document.title = (titles[route] ? titles[route] + " · " : "") + "ROC Production Hub";
     RENDER[route]();
     icons();
@@ -390,6 +390,13 @@
       "<h1>Rochester Production</h1><p>Everything the team needs to run the room.</p></div>" +
       '<div style="margin-top:20px">' + nextCard(now, true) + "</div>";
 
+    var ew = editsWeek(now), ec = editsCounts(ew);
+    html += '<div class="section-head"><h2>Sunday edits</h2><a class="meta" href="#edits">Open edits</a></div>' +
+      '<a class="card meter" href="#edits"><span class="eyebrow">Edits for Sunday, ' + MON_SHORT[ew.sunday.getMonth()] + " " + ew.sunday.getDate() + "</span>" +
+      '<span class="meter-count">' + ec.done + " <small>of " + ec.total + " done" +
+      (ew.st.baptisms.length ? " · " + ew.st.baptisms.length + (ew.st.baptisms.length === 1 ? " baptism" : " baptisms") : "") + "</small></span>" +
+      '<div class="progress" aria-hidden="true"><span style="width:' + (ec.total ? (ec.done / ec.total) * 100 : 0) + '%"></span></div></a>';
+
     html += '<div class="section-head"><h2>Recurring tasks</h2><a class="meta" href="#tasks">Open tasks</a></div><div class="meters">';
     FREQS.forEach(function (freq) {
       var c = taskCounts(freq, now);
@@ -414,10 +421,115 @@
     view.innerHTML = html;
   }
 
+  /* ======================================================== SUNDAY EDITS */
+  var EDITS_KEY = "roc-edits-v1";
+  var editsState = store.get(EDITS_KEY, {}); // { "YYYY-MM-DD" (Sunday): { checks, baptisms, noBaptisms } }
+  var removingBaptism = null;
+
+  function sundayOf(d) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() - x.getDay());
+    return x;
+  }
+  function editsWeek(now) {
+    var s = sundayOf(now);
+    var key = s.getFullYear() + "-" + pad(s.getMonth() + 1) + "-" + pad(s.getDate());
+    if (!editsState[key]) {
+      editsState[key] = { checks: {}, baptisms: [], noBaptisms: false };
+      // keep the last 8 weeks so storage doesn't grow forever
+      Object.keys(editsState).sort().slice(0, -8).forEach(function (k) { delete editsState[k]; });
+    }
+    return { key: key, sunday: s, st: editsState[key] };
+  }
+  function saveEdits() { store.set(EDITS_KEY, editsState); }
+
+  function fillText(str, ctx, html) {
+    return String(str)
+      .replace(/\{year\}/g, String(ctx.year))
+      .replace(/\{name\}/g, html ? esc(ctx.name || "") : (ctx.name || ""));
+  }
+  function editItems(list) {
+    var out = [];
+    list.forEach(function (g) { g.items.forEach(function (i) { out.push(i); }); });
+    return out;
+  }
+  function editsCounts(w) {
+    var ids = editItems(ROC.edits.message).map(function (i) { return i.id; });
+    if (!w.st.noBaptisms) {
+      w.st.baptisms.forEach(function (b) {
+        editItems(ROC.edits.baptism).forEach(function (i) { ids.push(b.id + ":" + i.id); });
+      });
+    }
+    return { done: ids.filter(function (id) { return !!w.st.checks[id]; }).length, total: ids.length };
+  }
+
+  function editRow(cid, item, ctx, st) {
+    var at = st.checks[cid], domId = "ed-" + cid.replace(/[^\w-]/g, "-");
+    var h = '<div class="check-row' + (at ? " done" : "") + '">' +
+      '<input type="checkbox" class="box" id="' + domId + '" data-edit="' + esc(cid) + '"' + (at ? " checked" : "") + ">" +
+      '<div class="check-text"><label for="' + domId + '">' + fillText(item.text, ctx, true) + "</label>";
+    if (item.note) h += '<div class="sub">' + fillText(item.note, ctx, true) + "</div>";
+    if (item.path) h += copyLine(fillText(item.path, ctx, false));
+    if (item.copy) h += copyLine(fillText(item.copy, ctx, false));
+    if (at) h += '<div class="sub">Done ' + fmtShortDate(at) + "</div>";
+    return h + "</div><span></span></div>";
+  }
+  function copyLine(text) {
+    return '<div class="copy-line"><code>' + esc(text) + "</code>" +
+      '<button type="button" class="ghost small" data-copy-text="' + esc(text) + '"><i data-lucide="copy"></i>Copy</button></div>';
+  }
+  function editGroups(groups, ctx, st, prefix) {
+    return groups.map(function (g) {
+      return '<div class="edit-group"><h3>' + esc(g.title) + "</h3>" +
+        (g.note ? '<p class="sub">' + esc(g.note) + "</p>" : "") +
+        '<div class="checklist">' + g.items.map(function (i) { return editRow(prefix + i.id, i, ctx, st); }).join("") + "</div></div>";
+    }).join("");
+  }
+
+  function renderEdits() {
+    var now = new Date(), w = editsWeek(now), st = w.st, c = editsCounts(w), year = w.sunday.getFullYear();
+    var html = '<div class="page-head"><span class="eyebrow">Edits for ' + DAY_LONG[0] + ", " + MON_LONG[w.sunday.getMonth()] + " " + w.sunday.getDate() + "</span>" +
+      "<h1>Sunday Edits</h1><p>Edit, export and upload this week's message and baptisms. Checks reset every Sunday.</p></div>" +
+      '<div class="section-head"><h2>This week</h2><span class="meta">' + c.done + " of " + c.total + " done</span></div>" +
+      '<div class="progress" aria-hidden="true"><span style="width:' + (c.total ? (c.done / c.total) * 100 : 0) + '%"></span></div>';
+
+    html += '<section class="edit-block card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="mic"></i></span><h2>Message</h2></div>' +
+      editGroups(ROC.edits.message, { year: year }, st, "") + "</section>";
+
+    html += '<section class="edit-block card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="droplets"></i></span><h2>Baptisms</h2>' +
+      (st.baptisms.length ? '<span class="meta">' + st.baptisms.length + (st.baptisms.length === 1 ? " baptism" : " baptisms") + "</span>" : "") + "</div>";
+    if (!st.baptisms.length) {
+      html += '<label class="none-toggle"><input type="checkbox" class="box" id="no-baptisms"' + (st.noBaptisms ? " checked" : "") + ">" +
+        "<span>No baptisms this week</span></label>";
+    }
+    if (!st.noBaptisms) {
+      st.baptisms.forEach(function (b) {
+        html += '<div class="baptism"><div class="baptism-head"><h3>' + esc(b.name) + "</h3>" +
+          '<button type="button" class="ghost small' + (removingBaptism === b.id ? " confirm" : "") + '" data-bap-remove="' + esc(b.id) + '">' +
+          (removingBaptism === b.id ? "Tap again to remove" : "Remove") + "</button></div>" +
+          editGroups(ROC.edits.baptism, { year: year, name: b.name }, st, b.id + ":") + "</div>";
+      });
+      html += '<form class="bap-add" id="bap-add-form" autocomplete="off">' +
+        '<label class="field" for="bap-name"><span class="eyebrow">' + (st.baptisms.length ? "Add another baptism" : "Add a baptism") + "</span>" +
+        '<div class="bap-add-row"><input id="bap-name" type="text" placeholder="Full name, e.g. Sarah Shiner">' +
+        '<button class="btn-primary" type="submit"><i data-lucide="plus"></i>Add</button></div></label>' +
+        '<p class="form-error" id="bap-error" role="alert" hidden></p></form>';
+    }
+    html += "</section>";
+    html += '<p class="footnote">Checks are saved on this device only.</p>' + supportPrompt("edits");
+    view.innerHTML = html;
+  }
+
+  function flashCopied(btn) {
+    var original = btn.innerHTML;
+    btn.textContent = "Copied";
+    setTimeout(function () { btn.innerHTML = original; }, 1500);
+  }
+
   /* ============================================================= SUPPORT */
   var SUP = ROC.support;
   var SECTIONS = [["general", "General / other"], ["boot", "Boot Up/Down"], ["schedule", "Automation Schedule"],
-    ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
+    ["edits", "Sunday Edits"], ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
   var supportForm = { type: SUP.types[0].id, section: "general", name: store.get("roc-support-name", ""), details: "" };
   var supportSent = null;
 
@@ -492,7 +604,7 @@
     return ok;
   }
 
-  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
+  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, edits: renderEdits, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
 
   /* ============================================================== EVENTS */
   view.addEventListener("change", function (e) {
@@ -553,6 +665,21 @@
     } else if ((el = e.target.closest("[data-support-from]"))) {
       supportForm.section = el.dataset.supportFrom;
       supportSent = null;
+    } else if ((el = e.target.closest("[data-copy-text]"))) {
+      var btn = el;
+      var text = el.dataset.copyText;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { flashCopied(btn); },
+          function () { if (fallbackCopy(text)) flashCopied(btn); });
+      } else if (fallbackCopy(text)) flashCopied(btn);
+    } else if ((el = e.target.closest("[data-bap-remove]"))) {
+      var bid = el.dataset.bapRemove;
+      if (removingBaptism !== bid) { removingBaptism = bid; render(); return; }
+      var w2 = editsWeek(new Date());
+      w2.st.baptisms = w2.st.baptisms.filter(function (b) { return b.id !== bid; });
+      Object.keys(w2.st.checks).forEach(function (k) { if (k.indexOf(bid + ":") === 0) delete w2.st.checks[k]; });
+      removingBaptism = null;
+      saveEdits(); render();
     } else if ((el = e.target.closest("[data-copy]"))) {
       copyText(el.dataset.copy === "address" ? supportAddress()
         : "To: " + supportAddress() + "\nSubject: " + supportSent.subject + "\n\n" + supportSent.body);
@@ -581,8 +708,34 @@
       var d = document.getElementById("sup-details");
       if (d) d.placeholder = supportType().placeholder;
     } else if (t.id === "sup-section") supportForm.section = t.value;
+    else if (t.dataset.edit) {
+      var wk = editsWeek(new Date());
+      if (t.checked) wk.st.checks[t.dataset.edit] = new Date().toISOString();
+      else delete wk.st.checks[t.dataset.edit];
+      saveEdits(); render();
+    } else if (t.id === "no-baptisms") {
+      editsWeek(new Date()).st.noBaptisms = t.checked;
+      saveEdits(); render();
+    }
   });
   view.addEventListener("submit", function (e) {
+    if (e.target.id === "bap-add-form") {
+      e.preventDefault();
+      var input = document.getElementById("bap-name"), name = input.value.trim().replace(/\s+/g, " ");
+      if (!name) {
+        var be = document.getElementById("bap-error");
+        be.textContent = "Type the person's full name first.";
+        be.hidden = false; input.focus();
+        return;
+      }
+      var wk = editsWeek(new Date());
+      wk.st.baptisms.push({ id: "b" + Date.now().toString(36), name: name });
+      wk.st.noBaptisms = false;
+      saveEdits(); render();
+      var again = document.getElementById("bap-name");
+      if (again) again.focus();
+      return;
+    }
     if (e.target.id !== "support-form") return;
     e.preventDefault();
     var err = document.getElementById("sup-error");
@@ -608,7 +761,7 @@
     if (route === "schedule" || route === "home") render();
   }, 60000);
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden && route !== "troubleshooting" && route !== "support") render();
+    if (!document.hidden && ["troubleshooting", "support", "edits"].indexOf(route) < 0) render();
   });
 
   render();

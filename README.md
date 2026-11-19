@@ -4,6 +4,7 @@ A phone-friendly web app for the Northridge Rochester production and worship tea
 
 - **Boot Up / Down**: step-by-step procedures, plus the pre-service checklist
 - **Automation Schedule**: what Companion runs on its own, and when, with the next automation up
+- **Sunday Edits**: edit, export and YouTube checklist for the message and each baptism, reset every Sunday
 - **Recurring Tasks**: weekly, monthly and quarterly upkeep that resets on its own
 - **Troubleshooting**: searchable fixes, grouped by system
 
@@ -17,8 +18,10 @@ Everything people read lives in the `data/` folder. Edit a file on GitHub, commi
 | --- | --- |
 | `data/boot.js` | Boot up and boot down steps, and the boot-up checklist |
 | `data/schedule.js` | Companion automation times (keep in sync with Companion) |
+| `data/edits.js` | Sunday Edits checklist for the message and each baptism |
 | `data/tasks.js` | Weekly, monthly and quarterly tasks and their team |
-| `data/troubleshooting.js` | Troubleshooting guides (an example entry is in the file) |
+| `data/troubleshooting.js` | Troubleshooting guides |
+| `data/support.js` | Where support requests are emailed, and the request types |
 
 Each file has notes at the top explaining its format. Two rules worth knowing:
 
