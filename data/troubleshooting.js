@@ -57,8 +57,8 @@ ROC.troubleshooting = [
       { see: "dante-network" },
       { text: "On the producer computer, set the Mac's sound output to <b>Dante Virtual Soundcard</b> (Control Center → Sound).",
         image: { src: "assets/troubleshooting/mac-sound-output.jpg", alt: "macOS Sound menu with Dante Virtual Soundcard selected as the output", caption: "Mac sound output set to Dante" } },
-      { text: "In the Spotify app on the producer computer, open <b>Connect to a device</b> and make sure the current device is <b>This computer</b>, so Spotify plays through the Mac's Dante output.",
-        image: { src: "assets/troubleshooting/spotify-device.jpg", alt: "Spotify Connect to a device panel showing This computer as the current device", caption: "Spotify playing on this computer" } }
+      { text: "In Spotify, open <b>Connect to a device</b> and send the audio to <b>Rochester Producer</b>. If you're using Spotify on the producer computer itself, it shows as <b>This computer</b>.",
+        image: { src: "assets/troubleshooting/spotify-device.jpg", alt: "Spotify Connect to a device panel, opened on the producer computer, with This computer as the current device", caption: "Connect to a device, opened on the producer computer" } }
     ]
   },
   {
