@@ -3,8 +3,8 @@
   ---------------------------------------------------------------
   The weekly edit-and-upload checklist. Checks reset every Sunday.
 
-  message:  steps for the message, done once per week
-  baptism:  steps repeated for every baptism added that week
+  message:  steps for the message
+  baptism:  steps for baptisms (always shown; repeat them for each baptism)
 
   Each group has a title and items. Item fields:
     id:    unique within its list; don't change once in use
@@ -14,8 +14,7 @@
     copy:  optional text to copy, shown with a Copy button
     link:  optional { href, label } shown as a link that opens in a new tab
 
-  Placeholders: {year} becomes the current year,
-                {name} becomes the baptism's full name.
+  Placeholder: {year} becomes the current year.
 */
 window.ROC = window.ROC || {};
 
@@ -52,8 +51,7 @@ ROC.edits = {
       { id: "export-yt", text: "Export with the <b>Northridge MP4 + YouTube</b> preset" }
     ] },
     { title: "YouTube", note: "No thumbnail needed here. Taylor handles baptism thumbnails.", items: [
-      { id: "yt-title", text: "Set the title to <b>{name} | Stories of Life Change</b>",
-        copy: "{name} | Stories of Life Change" },
+      { id: "yt-title", text: "Set the title to <b>First Name Last Name | Stories of Life Change</b>" },
       { id: "yt-public", text: "Set visibility to <b>Public</b>" },
       { id: "yt-monetization", text: "Turn monetization <b>on</b>" },
       { id: "yt-playlist-recent", text: "Add to the <b>Recent Uploads from Northridge Church</b> playlist" },

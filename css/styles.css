@@ -357,9 +357,9 @@ figcaption { font-size: 13px; color: var(--muted); }
 .edit-group { display: grid; gap: 8px; }
 .edit-group h3 { font-size: 12px; letter-spacing: 0.16em; color: var(--muted); }
 .edit-group > .sub { margin: -4px 0 0; }
-.baptism { display: grid; gap: 16px; padding-top: 18px; border-top: 1px solid var(--line); }
-.baptism-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.baptism-head h3 { font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
+.edit-block-note { margin: -8px 0 0; }
+.edit-block-body { display: grid; gap: 18px; }
+.edit-block.is-off .edit-block-body { opacity: 0.5; }
 .copy-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
 .copy-line code {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px;
@@ -374,9 +374,6 @@ figcaption { font-size: 13px; color: var(--muted); }
 .item-link svg { width: 14px; height: 14px; color: var(--gold-ink); }
 .none-toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 16px; }
 .none-toggle .box { margin: 0; flex: none; }
-.bap-add { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
-.bap-add-row { display: flex; gap: 8px; }
-.bap-add-row input { flex: 1; min-width: 0; }
 
 /* ---- Support ------------------------------------------------------------ */
 .support-prompt {

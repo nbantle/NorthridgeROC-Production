@@ -394,7 +394,7 @@
     html += '<div class="section-head"><h2>Sunday edits</h2><a class="meta" href="#edits">Open edits</a></div>' +
       '<a class="card meter" href="#edits"><span class="eyebrow">Edits for Sunday, ' + MON_SHORT[ew.sunday.getMonth()] + " " + ew.sunday.getDate() + "</span>" +
       '<span class="meter-count">' + ec.done + " <small>of " + ec.total + " done" +
-      (ew.st.baptisms.length ? " · " + ew.st.baptisms.length + (ew.st.baptisms.length === 1 ? " baptism" : " baptisms") : "") + "</small></span>" +
+      (ew.st.noBaptisms ? " · no baptisms" : "") + "</small></span>" +
       '<div class="progress" aria-hidden="true"><span style="width:' + (ec.total ? (ec.done / ec.total) * 100 : 0) + '%"></span></div></a>';
 
     html += '<div class="section-head"><h2>Recurring tasks</h2><a class="meta" href="#tasks">Open tasks</a></div><div class="meters">';
@@ -423,8 +423,7 @@
 
   /* ======================================================== SUNDAY EDITS */
   var EDITS_KEY = "roc-edits-v1";
-  var editsState = store.get(EDITS_KEY, {}); // { "YYYY-MM-DD" (Sunday): { checks, baptisms, noBaptisms } }
-  var removingBaptism = null;
+  var editsState = store.get(EDITS_KEY, {}); // { "YYYY-MM-DD" (Sunday): { checks, noBaptisms } }
 
   function sundayOf(d) {
     var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -435,7 +434,7 @@
     var s = sundayOf(now);
     var key = s.getFullYear() + "-" + pad(s.getMonth() + 1) + "-" + pad(s.getDate());
     if (!editsState[key]) {
-      editsState[key] = { checks: {}, baptisms: [], noBaptisms: false };
+      editsState[key] = { checks: {}, noBaptisms: false };
       // keep the last 8 weeks so storage doesn't grow forever
       Object.keys(editsState).sort().slice(0, -8).forEach(function (k) { delete editsState[k]; });
     }
@@ -456,9 +455,7 @@
   function editsCounts(w) {
     var ids = editItems(ROC.edits.message).map(function (i) { return i.id; });
     if (!w.st.noBaptisms) {
-      w.st.baptisms.forEach(function (b) {
-        editItems(ROC.edits.baptism).forEach(function (i) { ids.push(b.id + ":" + i.id); });
-      });
+      editItems(ROC.edits.baptism).forEach(function (i) { ids.push("bap:" + i.id); });
     }
     return { done: ids.filter(function (id) { return !!w.st.checks[id]; }).length, total: ids.length };
   }
@@ -500,26 +497,12 @@
     html += '<section class="edit-block card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="mic"></i></span><h2>Message</h2></div>' +
       editGroups(ROC.edits.message, { year: year }, st, "") + "</section>";
 
-    html += '<section class="edit-block card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="droplets"></i></span><h2>Baptisms</h2>' +
-      (st.baptisms.length ? '<span class="meta">' + st.baptisms.length + (st.baptisms.length === 1 ? " baptism" : " baptisms") + "</span>" : "") + "</div>";
-    if (!st.baptisms.length) {
-      html += '<label class="none-toggle"><input type="checkbox" class="box" id="no-baptisms"' + (st.noBaptisms ? " checked" : "") + ">" +
-        "<span>No baptisms this week</span></label>";
-    }
-    if (!st.noBaptisms) {
-      st.baptisms.forEach(function (b) {
-        html += '<div class="baptism"><div class="baptism-head"><h3>' + esc(b.name) + "</h3>" +
-          '<button type="button" class="ghost small' + (removingBaptism === b.id ? " confirm" : "") + '" data-bap-remove="' + esc(b.id) + '">' +
-          (removingBaptism === b.id ? "Tap again to remove" : "Remove") + "</button></div>" +
-          editGroups(ROC.edits.baptism, { year: year, name: b.name }, st, b.id + ":") + "</div>";
-      });
-      html += '<form class="bap-add" id="bap-add-form" autocomplete="off">' +
-        '<label class="field" for="bap-name"><span class="eyebrow">' + (st.baptisms.length ? "Add another baptism" : "Add a baptism") + "</span>" +
-        '<div class="bap-add-row"><input id="bap-name" type="text" placeholder="Full name, e.g. Sarah Shiner">' +
-        '<button class="btn-primary" type="submit"><i data-lucide="plus"></i>Add</button></div></label>' +
-        '<p class="form-error" id="bap-error" role="alert" hidden></p></form>';
-    }
-    html += "</section>";
+    html += '<section class="edit-block card' + (st.noBaptisms ? " is-off" : "") + '">' +
+      '<div class="edit-block-head"><span class="tile-icon"><i data-lucide="droplets"></i></span><h2>Baptisms</h2></div>' +
+      '<p class="sub edit-block-note">Repeat these steps for each baptism.</p>' +
+      '<label class="none-toggle"><input type="checkbox" class="box" id="no-baptisms"' + (st.noBaptisms ? " checked" : "") + ">" +
+      "<span>No baptisms this week</span></label>" +
+      '<div class="edit-block-body">' + editGroups(ROC.edits.baptism, { year: year }, st, "bap:") + "</div></section>";
     html += '<p class="footnote">Checks are saved on this device only.</p>' + supportPrompt("edits");
     view.innerHTML = html;
   }
@@ -676,14 +659,6 @@
         navigator.clipboard.writeText(text).then(function () { flashCopied(btn); },
           function () { if (fallbackCopy(text)) flashCopied(btn); });
       } else if (fallbackCopy(text)) flashCopied(btn);
-    } else if ((el = e.target.closest("[data-bap-remove]"))) {
-      var bid = el.dataset.bapRemove;
-      if (removingBaptism !== bid) { removingBaptism = bid; render(); return; }
-      var w2 = editsWeek(new Date());
-      w2.st.baptisms = w2.st.baptisms.filter(function (b) { return b.id !== bid; });
-      Object.keys(w2.st.checks).forEach(function (k) { if (k.indexOf(bid + ":") === 0) delete w2.st.checks[k]; });
-      removingBaptism = null;
-      saveEdits(); render();
     } else if ((el = e.target.closest("[data-copy]"))) {
       copyText(el.dataset.copy === "address" ? supportAddress()
         : "To: " + supportAddress() + "\nSubject: " + supportSent.subject + "\n\n" + supportSent.body);
@@ -723,23 +698,6 @@
     }
   });
   view.addEventListener("submit", function (e) {
-    if (e.target.id === "bap-add-form") {
-      e.preventDefault();
-      var input = document.getElementById("bap-name"), name = input.value.trim().replace(/\s+/g, " ");
-      if (!name) {
-        var be = document.getElementById("bap-error");
-        be.textContent = "Type the person's full name first.";
-        be.hidden = false; input.focus();
-        return;
-      }
-      var wk = editsWeek(new Date());
-      wk.st.baptisms.push({ id: "b" + Date.now().toString(36), name: name });
-      wk.st.noBaptisms = false;
-      saveEdits(); render();
-      var again = document.getElementById("bap-name");
-      if (again) again.focus();
-      return;
-    }
     if (e.target.id !== "support-form") return;
     e.preventDefault();
     var err = document.getElementById("sup-error");
