@@ -48,7 +48,7 @@ ROC.edits = {
       { id: "export-oc", text: "Export with the <b>Northridge MP4.OC</b> preset" },
       { id: "export-yt", text: "Export with the <b>Northridge MP4 + YouTube</b> preset" }
     ] },
-    { title: "YouTube", items: [
+    { title: "YouTube", note: "No thumbnail needed here. Taylor handles baptism thumbnails.", items: [
       { id: "yt-title", text: "Set the title to <b>{name} | Stories of Life Change</b>",
         copy: "{name} | Stories of Life Change" },
       { id: "yt-public", text: "Set visibility to <b>Public</b>" },
