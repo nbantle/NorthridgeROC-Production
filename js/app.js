@@ -47,7 +47,7 @@
   function quarterOf(d) { return Math.floor(d.getMonth() / 3) + 1; }
 
   /* --------------------------------------------------------------- router */
-  var ROUTES = ["home", "boot", "schedule", "edits", "tasks", "troubleshooting", "support"];
+  var ROUTES = ["home", "boot", "schedule", "edits", "roaming", "tasks", "troubleshooting", "support"];
   function currentRoute() {
     var r = location.hash.replace("#", "");
     return ROUTES.indexOf(r) >= 0 ? r : "home";
@@ -60,7 +60,7 @@
       if (a.dataset.route === route) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", tasks: "Tasks", troubleshooting: "Troubleshooting", support: "Support" };
+    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", roaming: "Roaming Camera", tasks: "Tasks", troubleshooting: "Troubleshooting", support: "Support" };
     document.title = (titles[route] ? titles[route] + " · " : "") + "ROC Production Hub";
     RENDER[route]();
     icons();
@@ -410,6 +410,7 @@
     var tiles = [
       { href: "#boot", icon: "power", title: "Boot Up / Down", text: "Step-by-step power on and power off for the auditorium.", status: bootDone + " of " + bootList.length + " boot-up checks done" },
       { href: "#schedule", icon: "clock", title: "Automation Schedule", text: "What Companion turns on and off, and when.", status: SCHED.automations.length + " automations" },
+      { href: "#roaming", icon: "video", title: "Roaming Camera", text: "Setup and operating notes for the roaming camera.", status: (ROC.roaming && ROC.roaming.sections.length) ? ROC.roaming.sections.length + " sections" : "Coming soon" },
       { href: "#tasks", icon: "list-checks", title: "Recurring Tasks", text: "Weekly, monthly and quarterly upkeep for both teams.", status: FREQS.reduce(function (n, f) { return n + ROC.tasks[f].length; }, 0) + " tasks" },
       { href: "#troubleshooting", icon: "wrench", title: "Troubleshooting", text: "Fixes for the problems that come up most.", status: guides ? guides + " guides" : "Coming soon" }
     ];
@@ -511,10 +512,30 @@
     setTimeout(function () { btn.innerHTML = original; }, 1500);
   }
 
+  /* ====================================================== ROAMING CAMERA */
+  function renderRoaming() {
+    var R = ROC.roaming || { sections: [] }, sections = R.sections || [];
+    var html = '<div class="page-head"><span class="eyebrow">Cameras</span><h1>Roaming Camera</h1>' +
+      (R.intro ? "<p>" + R.intro + "</p>" : "") + "</div>";
+    if (!sections.length) {
+      html += '<div class="card empty" style="margin-top:24px"><div class="tile-icon"><i data-lucide="video"></i></div>' +
+        "<h3>Coming soon</h3><p>Roaming camera setup, operation and tips will show up here.</p></div>";
+    } else {
+      html += '<div class="roaming">' + sections.map(function (s) {
+        return '<section class="card roaming-card"><h2>' + esc(s.title || "") + "</h2>" +
+          (s.text ? "<p>" + s.text + "</p>" : "") +
+          (s.steps && s.steps.length ? '<ol class="fix-steps">' + s.steps.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ol>" : "") +
+          (s.items && s.items.length ? "<ul>" + s.items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ul>" : "") +
+          (s.image ? figure(s.image) : "") + "</section>";
+      }).join("") + "</div>";
+    }
+    view.innerHTML = html + supportPrompt("roaming");
+  }
+
   /* ============================================================= SUPPORT */
   var SUP = ROC.support;
   var SECTIONS = [["general", "General / other"], ["boot", "Boot Up/Down"], ["schedule", "Automation Schedule"],
-    ["edits", "Sunday Edits"], ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
+    ["edits", "Sunday Edits"], ["roaming", "Roaming Camera"], ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
   var supportForm = { type: SUP.types[0].id, section: "general", name: store.get("roc-support-name", ""), details: "" };
   var supportSent = null;
 
@@ -589,7 +610,7 @@
     return ok;
   }
 
-  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, edits: renderEdits, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
+  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, edits: renderEdits, roaming: renderRoaming, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
 
   /* ============================================================== EVENTS */
   view.addEventListener("change", function (e) {

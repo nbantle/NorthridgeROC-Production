@@ -20,6 +20,7 @@ Everything people read lives in the `data/` folder. Edit a file on GitHub, commi
 | `data/schedule.js` | Companion automation times (keep in sync with Companion) |
 | `data/edits.js` | Sunday Edits checklist for the message and each baptism |
 | `data/tasks.js` | Weekly, monthly and quarterly tasks and their team |
+| `data/roaming.js` | Roaming Camera page (empty until sections are added) |
 | `data/troubleshooting.js` | Troubleshooting guides |
 | `data/support.js` | Where support requests are emailed, and the request types |
 
