@@ -1,7 +1,7 @@
 {
   "name": "ROC Production Hub",
-  "short_name": "ROC Production",
-  "description": "Boot up and boot down, automation schedule, recurring tasks and troubleshooting for Northridge Rochester production.",
+  "short_name": "Production Hub",
+  "description": "Boot up and down, automation schedule, Sunday edits, roaming camera, recurring tasks, troubleshooting and support for Northridge Rochester production.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -56,11 +56,12 @@
 
   function render(focus) {
     route = currentRoute();
+    ensureBootDay();
     document.querySelectorAll("[data-route]").forEach(function (a) {
       if (a.dataset.route === route) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", roaming: "Roaming Camera", tasks: "Tasks", troubleshooting: "Troubleshooting", support: "Support" };
+    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", roaming: "Roaming Camera", tasks: "Recurring Tasks", troubleshooting: "Troubleshooting", support: "Support" };
     document.title = (titles[route] ? titles[route] + " · " : "") + "ROC Production Hub";
     RENDER[route]();
     icons();
@@ -74,6 +75,20 @@
   var bootMode = store.get("roc-boot-mode", "up");
   var confirmingReset = false;
 
+  function todayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  // The boot checklist clears itself at the start of each day, keeping the
+  // "last checked" date on weekly items.
+  function ensureBootDay() {
+    var key = todayKey(new Date());
+    if (bootState._day === key) return;
+    var fresh = { _day: key };
+    ROC.boot.up.checklist.concat(ROC.boot.down.checklist).forEach(function (item) {
+      if (item.weekly && bootState[item.id] && bootState[item.id].at) fresh[item.id] = { done: false, at: bootState[item.id].at };
+    });
+    bootState = fresh;
+    store.set(BOOT_KEY, bootState);
+  }
+
   function bootItemDone(item) {
     var s = bootState[item.id];
     if (!s) return false;
@@ -83,7 +98,7 @@
 
   function renderBoot() {
     var proc = ROC.boot[bootMode];
-    var html = '<div class="page-head"><span class="eyebrow">Auditorium</span><h1>Boot Up / Down</h1></div>' +
+    var html = '<div class="page-head"><span class="eyebrow">Auditorium</span><h1>Boot Up/Down</h1></div>' +
       '<div class="segment" role="group" aria-label="Procedure">' +
       '<button type="button" data-boot="up" aria-pressed="' + (bootMode === "up") + '"><i data-lucide="power"></i>Boot Up</button>' +
       '<button type="button" data-boot="down" aria-pressed="' + (bootMode === "down") + '"><i data-lucide="power-off"></i>Boot Down</button>' +
@@ -118,7 +133,7 @@
       });
       html += '</div><div class="actions"><button type="button" class="ghost' + (confirmingReset ? " confirm" : "") + '" id="boot-reset">' +
         '<i data-lucide="rotate-ccw"></i>' + (confirmingReset ? "Tap again to clear all" : "Reset checklist") + "</button></div>" +
-        '<p class="footnote">Checks are saved on this device only.</p>';
+        '<p class="footnote">Checks clear at the start of each day and are saved on this device only.</p>';
     }
     html += supportPrompt("boot");
     view.innerHTML = html;
@@ -200,6 +215,25 @@
       });
       html += "</section>";
     });
+
+    // Days not listed above still get any "Daily" automations.
+    var listed = SCHED.days.map(function (d) { return DOW[d.key]; });
+    var otherDays = [0, 1, 2, 3, 4, 5, 6].filter(function (d) { return listed.indexOf(d) < 0; });
+    var dailyRuns = runsOnDow(-1);
+    if (otherDays.length && dailyRuns.length) {
+      var otherToday = otherDays.indexOf(todayDow) >= 0;
+      html += '<section class="day card"><div class="day-head"><h3>Other days</h3>' +
+        (otherToday ? '<span class="tag solid">Today</span>' : '<span class="meta">' + otherDays.map(function (d) { return DAY_SHORT[d]; }).join(", ") + "</span>") + "</div>";
+      if (otherToday) html += '<div class="run"><div class="run-time"></div><div class="run-group">' + otherDays.map(function (d) { return DAY_LONG[d]; }).join(", ") + "</div></div>";
+      dailyRuns.forEach(function (r) {
+        var hit = next && otherToday && next.at.toDateString() === now.toDateString() &&
+          next.list.some(function (n) { return n.a === r.a && n.t === r.t; });
+        html += '<div class="run' + (hit ? " is-next" : "") + '"><div class="run-time">' + fmtTime(r.t) + "</div><div>" +
+          '<div class="run-name"><i data-lucide="' + esc(r.a.icon) + '"></i>' + esc(r.a.name) + ' <span class="tag quiet">Daily</span></div>' +
+          '<div class="run-group">' + esc(r.a.group) + (r.note ? " · " + esc(r.note) : "") + "</div></div></div>";
+      });
+      html += "</section>";
+    }
     html += "</div>";
 
     var groups = [];
@@ -268,8 +302,8 @@
       return teamFilter === "all" || t.team === teamFilter || t.team === "S";
     });
   }
-  function taskCounts(freq, now) {
-    var list = visibleTasks(freq);
+  function taskCounts(freq, now, allTeams) {
+    var list = allTeams ? ROC.tasks[freq] : visibleTasks(freq);
     return { done: list.filter(function (t) { return !!taskDoneAt(t, freq, now); }).length, total: list.length };
   }
 
@@ -347,7 +381,9 @@
         (g.symptoms ? '<p class="symptoms">' + g.symptoms + "</p>" : "") +
         (g.info || g.image ? '<div class="info">' + (g.info ? "<p>" + g.info + "</p>" : "") + (g.image ? figure(g.image) : "") + "</div>" : "") +
         '<ol class="fix-steps">' + (g.steps || []).map(stepHtml).join("") + "</ol>" +
-        (g.escalate ? '<div class="escalate"><i data-lucide="phone"></i><div><span class="eyebrow">Still broken?</span><p>' + esc(g.escalate) + "</p></div></div>" : "") +
+        (g.escalate ? '<div class="escalate"><i data-lucide="phone"></i><div><span class="eyebrow">Still broken?</span><p>' + esc(g.escalate) + "</p>" +
+          '<a class="item-link" href="#support" data-support-from="troubleshooting">Or send ' + esc(SUP.contactName) + " a support request" +
+          '<i data-lucide="chevron-right"></i></a></div></div>' : "") +
         "</div></details>";
     }).join("") : '<div class="card empty"><p>No guides match that search.</p></div>';
     icons();
@@ -387,7 +423,7 @@
   function renderHome() {
     var now = new Date();
     var html = '<div class="page-head"><span class="eyebrow">' + DAY_LONG[now.getDay()] + ", " + MON_LONG[now.getMonth()] + " " + now.getDate() + "</span>" +
-      "<h1>Rochester Production</h1><p>Everything the team needs to run the room.</p></div>" +
+      "<h1>Production Hub</h1><p>Everything the Rochester team needs to run the room.</p></div>" +
       '<div style="margin-top:20px">' + nextCard(now, true) + "</div>";
 
     var ew = editsWeek(now), ec = editsCounts(ew);
@@ -398,7 +434,7 @@
 
     html += '<div class="section-head"><h2>Recurring tasks</h2><a class="meta" href="#tasks">Open tasks</a></div><div class="meters">';
     FREQS.forEach(function (freq) {
-      var c = taskCounts(freq, now);
+      var c = taskCounts(freq, now, true);
       html += '<a class="card meter" href="#tasks"><span class="eyebrow">' + PERIODS[freq].label + "</span>" +
         '<span class="meter-count">' + c.done + " <small>of " + c.total + " done</small></span>" +
         '<div class="progress" aria-hidden="true"><span style="width:' + (c.total ? (c.done / c.total) * 100 : 0) + '%"></span></div></a>';
@@ -408,8 +444,9 @@
     var bootList = ROC.boot.up.checklist, bootDone = bootList.filter(bootItemDone).length;
     var guides = (ROC.troubleshooting || []).length;
     var tiles = [
-      { href: "#boot", icon: "power", title: "Boot Up / Down", text: "Step-by-step power on and power off for the auditorium.", status: bootDone + " of " + bootList.length + " boot-up checks done" },
+      { href: "#boot", icon: "power", title: "Boot Up/Down", text: "Step-by-step power on and power off for the auditorium.", status: bootDone + " of " + bootList.length + " boot-up checks done today" },
       { href: "#schedule", icon: "clock", title: "Automation Schedule", text: "What Companion turns on and off, and when.", status: SCHED.automations.length + " automations" },
+      { href: "#edits", icon: "clapperboard", title: "Sunday Edits", text: "Edit, export and upload the message and baptisms.", status: ec.done + " of " + ec.total + " done this week" },
       { href: "#roaming", icon: "video", title: "Roaming Camera", text: "Setup and operating notes for the roaming camera.", status: (ROC.roaming && ROC.roaming.sections.length) ? ROC.roaming.sections.length + " sections" : "Coming soon" },
       { href: "#tasks", icon: "list-checks", title: "Recurring Tasks", text: "Weekly, monthly and quarterly upkeep for both teams.", status: FREQS.reduce(function (n, f) { return n + ROC.tasks[f].length; }, 0) + " tasks" },
       { href: "#troubleshooting", icon: "wrench", title: "Troubleshooting", text: "Fixes for the problems that come up most.", status: guides ? guides + " guides" : "Coming soon" }
@@ -492,7 +529,7 @@
     var now = new Date(), w = editsWeek(now), st = w.st, c = editsCounts(w), year = w.sunday.getFullYear();
     var html = '<div class="page-head"><span class="eyebrow">Edits for ' + DAY_LONG[0] + ", " + MON_LONG[w.sunday.getMonth()] + " " + w.sunday.getDate() + "</span>" +
       "<h1>Sunday Edits</h1><p>Edit, export and upload this week's message and baptisms. Checks reset every Sunday.</p></div>" +
-      '<div class="section-head"><h2>This week</h2><span class="meta">' + c.done + " of " + c.total + " done</span></div>" +
+      '<div class="section-head"><h2>This week</h2><span class="meta">' + c.done + " of " + c.total + " done · Resets Sunday</span></div>" +
       '<div class="progress" aria-hidden="true"><span style="width:' + (c.total ? (c.done / c.total) * 100 : 0) + '%"></span></div>';
 
     html += '<section class="edit-block card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="mic"></i></span><h2>Message</h2></div>' +
@@ -550,7 +587,7 @@
   }
 
   function renderSupport() {
-    var html = '<div class="page-head"><span class="eyebrow">Support</span><h1>Ask a Question</h1>' +
+    var html = '<div class="page-head"><span class="eyebrow">Ask a question</span><h1>Support</h1>' +
       "<p>Send " + esc(SUP.contactName) + " a technical question, report something that isn't working, or ask for something to be added to this app.</p></div>";
     if (supportSent) {
       html += '<div class="card support-done"><div class="tile-icon"><i data-lucide="mail-check"></i></div>' +
@@ -659,7 +696,7 @@
       if (!confirmingReset) { confirmingReset = true; render(); document.getElementById("boot-reset").focus(); return; }
       ROC.boot[bootMode].checklist.forEach(function (item) {
         var keepAt = item.weekly && bootState[item.id] ? bootState[item.id].at : undefined;
-        bootState[item.id] = keepAt ? { done: false, at: keepAt } : {};
+        if (keepAt) bootState[item.id] = { done: false, at: keepAt }; else delete bootState[item.id];
       });
       confirmingReset = false;
       store.set(BOOT_KEY, bootState);

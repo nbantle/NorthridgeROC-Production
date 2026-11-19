@@ -21,6 +21,9 @@
   --band-muted: #C9C7C0;
   --shadow: 0 1px 2px rgba(36, 31, 32, 0.06), 0 3px 10px rgba(36, 31, 32, 0.05);
   --danger: #B3261E;
+  /* darker gray and gold for small text on cream, so it stays readable */
+  --muted-on-cream: #5E625B;
+  --gold-ink-on-cream: #7A5A00;
 
   --font-display: "Gotham HTF", "Gotham", "Montserrat", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Futura PT", "Futura", "Jost", "Helvetica Neue", Arial, sans-serif;
@@ -44,6 +47,8 @@
     --band-muted: #B7B9B3;
     --shadow: none;
     --danger: #F2B8B5;
+    --muted-on-cream: #B7B9B3;
+    --gold-ink-on-cream: #F2C659;
     color-scheme: dark;
   }
 }
@@ -192,6 +197,12 @@ ol.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 @media (max-width: 440px) {
   .step { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .num { width: 34px; height: 34px; font-size: 14px; }
+}
+
+/* ---- Cream surfaces use the darker text colors -------------------------- */
+.checklist, .info, .run.is-next {
+  --muted: var(--muted-on-cream);
+  --gold-ink: var(--gold-ink-on-cream);
 }
 
 /* ---- Checklists --------------------------------------------------------- */

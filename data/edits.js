@@ -48,14 +48,15 @@ ROC.edits = {
     { title: "Edit and export", items: [
       { id: "edit", text: "Edit the baptism" },
       { id: "export-oc", text: "Export with the <b>Northridge MP4.OC</b> preset" },
-      { id: "export-yt", text: "Export with the <b>Northridge MP4 + YouTube</b> preset" }
+      { id: "export-yt", text: "Export with the <b>Northridge MP4 + YouTube</b> preset",
+        note: "Uploads to YouTube automatically." }
     ] },
     { title: "YouTube", note: "No thumbnail needed here. Taylor handles baptism thumbnails.", items: [
       { id: "yt-title", text: "Set the title to <b>First Name Last Name | Stories of Life Change</b>" },
-      { id: "yt-public", text: "Set visibility to <b>Public</b>" },
       { id: "yt-monetization", text: "Turn monetization <b>on</b>" },
       { id: "yt-playlist-recent", text: "Add to the <b>Recent Uploads from Northridge Church</b> playlist" },
-      { id: "yt-playlist-stories", text: "Add to the <b>Stories of Life Change</b> playlist" }
+      { id: "yt-playlist-stories", text: "Add to the <b>Stories of Life Change</b> playlist" },
+      { id: "yt-public", text: "Set visibility to <b>Public</b>" }
     ] }
   ]
 };
