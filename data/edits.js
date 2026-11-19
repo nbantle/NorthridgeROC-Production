@@ -37,8 +37,8 @@ ROC.edits = {
       { id: "msg-yt-monetization", text: "Turn monetization <b>on</b>" },
       { id: "msg-yt-playlist-recent", text: "Add to the <b>Recent Uploads from Northridge Church</b> playlist" },
       { id: "msg-yt-playlist-series", text: "Add to the <b>current series</b> playlist" },
-      { id: "msg-yt-public", text: "Set visibility to <b>Public</b>" },
-      { id: "msg-yt-thumbnail", text: "Add the thumbnail" }
+      { id: "msg-yt-thumbnail", text: "Add the thumbnail" },
+      { id: "msg-yt-public", text: "Set visibility to <b>Public</b>" }
     ] }
   ],
 
