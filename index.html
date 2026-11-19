@@ -15,7 +15,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Montserrat:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="css/styles.css">
+  <!-- Load the app's own files fresh every visit, so updates show up right away
+       instead of waiting for the browser's cached copy to expire. -->
+  <script>window.ROC_V = Date.now();</script>
+  <script>document.write('<link rel="stylesheet" href="css/styles.css?v=' + window.ROC_V + '">');</script>
+  <noscript><link rel="stylesheet" href="css/styles.css"></noscript>
 </head>
 <body>
   <header class="topbar">
@@ -51,12 +55,12 @@
   <noscript><p class="wrap">This app needs JavaScript turned on.</p></noscript>
 
   <script src="js/vendor/lucide-0.460.0.min.js"></script>
-  <script src="data/boot.js"></script>
-  <script src="data/schedule.js"></script>
-  <script src="data/tasks.js"></script>
-  <script src="data/troubleshooting.js"></script>
-  <script src="data/support.js"></script>
-  <script src="data/edits.js"></script>
-  <script src="js/app.js"></script>
+  <script>
+    // Add new data files here, in this list.
+    ["data/boot.js", "data/schedule.js", "data/tasks.js", "data/troubleshooting.js",
+     "data/support.js", "data/edits.js", "js/app.js"].forEach(function (src) {
+      document.write('<script src="' + src + "?v=" + window.ROC_V + '"><\/script>');
+    });
+  </script>
 </body>
 </html>

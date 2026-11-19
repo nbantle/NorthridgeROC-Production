@@ -27,6 +27,7 @@ Each file has notes at the top explaining its format. Two rules worth knowing:
 
 - Checklist and task `id`s are how the app remembers checks. Don't change an id once it's in use, and keep each one unique.
 - Icons are [Lucide](https://lucide.dev/icons) names, like `power`, `monitor` or `wrench`.
+- If you add a new file to `data/`, also add it to the list near the bottom of `index.html`. That list loads each file fresh on every visit, so people never get stuck on an old cached version.
 
 ## Where checks are saved
 
