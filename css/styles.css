@@ -133,6 +133,16 @@ b, strong { font-family: var(--font-display); font-weight: 600; font-size: 0.9em
 .tabbar svg { width: 22px; height: 22px; stroke-width: 1.75; }
 .tabbar a[aria-current="page"] { color: var(--gold); }
 
+@media (max-width: 1100px) {
+  .topbar-inner { gap: 16px; }
+  .topnav { gap: 0; }
+  .topnav a { padding: 8px 8px; font-size: 11px; letter-spacing: 0.06em; }
+}
+@media (max-width: 860px) {
+  .topnav { display: none; }
+  .tabbar { display: flex; }
+  main.wrap { padding-bottom: calc(var(--tabbar-h) + 40px + env(safe-area-inset-bottom, 0px)); }
+}
 @media (max-width: 760px) {
   .topnav { display: none; }
   .tabbar { display: flex; }
