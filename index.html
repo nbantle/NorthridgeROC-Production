@@ -35,6 +35,7 @@
         <a href="#boot" data-route="boot">Boot Up/Down</a>
         <a href="#schedule" data-route="schedule">Automation Schedule</a>
         <a href="#edits" data-route="edits">Sunday Edits</a>
+        <a href="#pco" data-route="pco">PCO</a>
         <a href="#roaming" data-route="roaming">Roaming Camera</a>
         <a href="#tasks" data-route="tasks">Recurring Tasks</a>
         <a href="#troubleshooting" data-route="troubleshooting">Troubleshooting</a>
@@ -49,6 +50,7 @@
     <a href="#boot" data-route="boot"><i data-lucide="power"></i><span>Boot</span></a>
     <a href="#schedule" data-route="schedule"><i data-lucide="clock"></i><span>Automation</span></a>
     <a href="#edits" data-route="edits"><i data-lucide="clapperboard"></i><span>Edits</span></a>
+    <a href="#pco" data-route="pco"><i data-lucide="calendar-clock"></i><span>PCO</span></a>
     <a href="#tasks" data-route="tasks"><i data-lucide="list-checks"></i><span>Tasks</span></a>
     <a href="#troubleshooting" data-route="troubleshooting"><i data-lucide="wrench"></i><span>Fix</span></a>
   </nav>
@@ -59,7 +61,7 @@
   <script>
     // Add new data files here, in this list.
     ["data/boot.js", "data/schedule.js", "data/tasks.js", "data/troubleshooting.js",
-     "data/support.js", "data/edits.js", "data/roaming.js", "js/app.js"].forEach(function (src) {
+     "data/support.js", "data/edits.js", "data/roaming.js", "data/pco.js", "js/app.js"].forEach(function (src) {
       document.write('<script src="' + src + "?v=" + window.ROC_V + '"><\/script>');
     });
   </script>

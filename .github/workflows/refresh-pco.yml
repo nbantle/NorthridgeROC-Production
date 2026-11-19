@@ -1,0 +1,61 @@
+name: Refresh PCO volunteers
+
+# Every morning around 9 AM Eastern, pull who is serving at the next Rochester
+# service from Planning Center and update data/pco.js.
+#
+# GitHub schedules use UTC and don't follow daylight saving time, so this runs
+# at 13:07 and 14:07 UTC. One of those is always 9:07 AM Eastern; the other is
+# an hour away and simply refreshes again (nothing is committed if nothing
+# changed). GitHub can start scheduled runs a few minutes late.
+on:
+  schedule:
+    - cron: "7 13 * * *"
+    - cron: "7 14 * * *"
+  workflow_dispatch: {}   # "Run workflow" button on the Actions tab
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: refresh-pco
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull the next service from Planning Center
+        env:
+          PCO_APP_ID: ${{ secrets.PCO_APP_ID }}
+          PCO_SECRET: ${{ secrets.PCO_SECRET }}
+        run: |
+          if [ -z "$PCO_APP_ID" ] || [ -z "$PCO_SECRET" ]; then
+            echo "::error::Add PCO_APP_ID and PCO_SECRET under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          python3 scripts/refresh_pco.py
+
+      - name: Save the update
+        id: commit
+        run: |
+          if git diff --quiet -- data/pco.js; then
+            echo "No changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/pco.js
+          git commit -m "Refresh PCO volunteers"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild the site
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

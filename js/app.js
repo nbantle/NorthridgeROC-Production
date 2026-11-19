@@ -47,7 +47,7 @@
   function quarterOf(d) { return Math.floor(d.getMonth() / 3) + 1; }
 
   /* --------------------------------------------------------------- router */
-  var ROUTES = ["home", "boot", "schedule", "edits", "roaming", "tasks", "troubleshooting", "support"];
+  var ROUTES = ["home", "boot", "schedule", "edits", "pco", "roaming", "tasks", "troubleshooting", "support"];
   function currentRoute() {
     var r = location.hash.replace("#", "");
     return ROUTES.indexOf(r) >= 0 ? r : "home";
@@ -61,7 +61,7 @@
       if (a.dataset.route === route) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", roaming: "Roaming Camera", tasks: "Recurring Tasks", troubleshooting: "Troubleshooting", support: "Support" };
+    var titles = { home: "", boot: "Boot Up/Down", schedule: "Automation Schedule", edits: "Sunday Edits", pco: "PCO", roaming: "Roaming Camera", tasks: "Recurring Tasks", troubleshooting: "Troubleshooting", support: "Support" };
     document.title = (titles[route] ? titles[route] + " · " : "") + "ROC Production Hub";
     RENDER[route]();
     icons();
@@ -447,6 +447,7 @@
       { href: "#boot", icon: "power", title: "Boot Up/Down", text: "Step-by-step power on and power off for the auditorium.", status: bootDone + " of " + bootList.length + " boot-up checks done today" },
       { href: "#schedule", icon: "clock", title: "Automation Schedule", text: "What Companion turns on and off, and when.", status: SCHED.automations.length + " automations" },
       { href: "#edits", icon: "clapperboard", title: "Sunday Edits", text: "Edit, export and upload the message and baptisms.", status: ec.done + " of " + ec.total + " done this week" },
+      { href: "#pco", icon: "calendar-clock", title: "PCO", text: "Who's serving at the next Rochester service.", status: (ROC.pco && ROC.pco.plan) ? ROC.pco.plan.dates : "Waiting for Planning Center" },
       { href: "#roaming", icon: "video", title: "Roaming Camera", text: "Setup and operating notes for the roaming camera.", status: (ROC.roaming && ROC.roaming.sections.length) ? ROC.roaming.sections.length + " sections" : "Coming soon" },
       { href: "#tasks", icon: "list-checks", title: "Recurring Tasks", text: "Weekly, monthly and quarterly upkeep for both teams.", status: FREQS.reduce(function (n, f) { return n + ROC.tasks[f].length; }, 0) + " tasks" },
       { href: "#troubleshooting", icon: "wrench", title: "Troubleshooting", text: "Fixes for the problems that come up most.", status: guides ? guides + " guides" : "Coming soon" }
@@ -549,6 +550,76 @@
     setTimeout(function () { btn.innerHTML = original; }, 1500);
   }
 
+  /* ================================================================= PCO */
+  var PCO_ICONS = { Audio: "audio-lines", Production: "video", Music: "music", Choir: "users" };
+
+  function fmtClock(d) {
+    var h = d.getHours(), m = d.getMinutes();
+    return (h % 12 || 12) + ":" + pad(m) + " " + (h < 12 ? "AM" : "PM");
+  }
+  function fmtDayTime(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? "" : DAY_SHORT[d.getDay()] + " " + fmtClock(d);
+  }
+
+  function renderPco() {
+    var P = ROC.pco;
+    var html = '<div class="page-head"><span class="eyebrow">Planning Center</span><h1>PCO</h1>' +
+      "<p>Who's serving at the next Rochester service. Updates every morning around 9 AM.</p></div>";
+
+    if (!P || !P.plan) {
+      html += '<div class="card empty" style="margin-top:24px"><div class="tile-icon"><i data-lucide="calendar-clock"></i></div>' +
+        (P ? "<h3>No upcoming service</h3><p>Planning Center doesn't have an upcoming Rochester service yet.</p>"
+           : "<h3>Waiting for Planning Center</h3><p>The volunteer list shows up here after the first morning update.</p>") +
+        "</div>" + supportPrompt("pco");
+      view.innerHTML = html;
+      return;
+    }
+
+    var plan = P.plan, updated = new Date(P.updated);
+    // only show service times that haven't happened yet (a plan can cover Thursday and Sunday)
+    var upcomingTimes = (plan.times || []).filter(function (t) { return new Date(t.startsAt).getTime() + 2 * 3600 * 1000 >= Date.now(); });
+    var all = [];
+    P.groups.forEach(function (g) { all = all.concat(g.members); });
+    var count = function (s) { return all.filter(function (m) { return m.status === s; }).length; };
+    var stale = !isNaN(updated) && (Date.now() - updated) > 30 * 3600 * 1000;
+
+    html += '<div class="next pco-plan"><span class="eyebrow">Next service</span>' +
+      '<span class="next-name">' + esc(plan.dates || "") + "</span>" +
+      ((plan.series || plan.title) ? '<span class="next-when">' + esc([plan.series, plan.title].filter(Boolean).join(" · ")) + "</span>" : "") +
+      (upcomingTimes.length ? '<span class="pco-times">' + upcomingTimes.map(function (t) {
+        return '<span class="pco-time">' + fmtDayTime(t.startsAt) + "</span>";
+      }).join("") + "</span>" : "") +
+      '<a class="pco-link" href="' + esc(plan.url) + '" target="_blank" rel="noopener">Open in Planning Center<i data-lucide="external-link"></i></a></div>';
+
+    html += '<div class="section-head"><h2>Team</h2><span class="meta">' +
+      [count("confirmed") + " confirmed", count("pending") ? count("pending") + " pending" : "", count("open") ? count("open") + " open" : ""]
+        .filter(Boolean).join(" · ") + "</span></div>";
+
+    if (!P.groups.length) {
+      html += '<div class="card empty"><p>No one is scheduled on the Audio, Production, Music or Choir teams yet.</p></div>';
+    }
+    html += '<div class="roster">' + P.groups.map(function (g) {
+      return '<section class="card roster-card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="' + (PCO_ICONS[g.name] || "users") + '"></i></span>' +
+        "<h2>" + esc(g.name) + '</h2><span class="meta">' + g.members.filter(function (m) { return m.status !== "open"; }).length + "</span></div>" +
+        g.members.map(function (m) {
+          return '<div class="roster-row' + (m.status === "open" ? " is-open" : "") + '">' +
+            '<span class="roster-pos">' + esc(m.position || m.team || "") + "</span>" +
+            '<span class="roster-name">' + (m.status === "open" ? "Not filled" : esc(m.name)) + "</span>" +
+            (m.status === "pending" ? '<span class="tag quiet" title="Hasn\'t accepted yet in Planning Center">Pending</span>'
+              : m.status === "open" ? '<span class="tag">Open</span>' : "<span></span>") +
+            "</div>";
+        }).join("") + "</section>";
+    }).join("") + "</div>";
+
+    html += '<p class="footnote' + (stale ? " stale" : "") + '">' +
+      (stale ? "This hasn't updated since " : "Updated ") +
+      (isNaN(updated) ? "recently" : fmtShortDate(P.updated) + " at " + fmtClock(updated)) +
+      (stale ? ". The morning refresh may have stopped; check the repo's Actions tab." : " from Planning Center.") +
+      " Names show first name and last initial only.</p>" + supportPrompt("pco");
+    view.innerHTML = html;
+  }
+
   /* ====================================================== ROAMING CAMERA */
   function renderRoaming() {
     var R = ROC.roaming || { sections: [] }, sections = R.sections || [];
@@ -572,7 +643,7 @@
   /* ============================================================= SUPPORT */
   var SUP = ROC.support;
   var SECTIONS = [["general", "General / other"], ["boot", "Boot Up/Down"], ["schedule", "Automation Schedule"],
-    ["edits", "Sunday Edits"], ["roaming", "Roaming Camera"], ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
+    ["edits", "Sunday Edits"], ["pco", "PCO"], ["roaming", "Roaming Camera"], ["tasks", "Recurring Tasks"], ["troubleshooting", "Troubleshooting"]];
   var supportForm = { type: SUP.types[0].id, section: "general", name: store.get("roc-support-name", ""), details: "" };
   var supportSent = null;
 
@@ -647,7 +718,7 @@
     return ok;
   }
 
-  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, edits: renderEdits, roaming: renderRoaming, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
+  var RENDER = { home: renderHome, boot: renderBoot, schedule: renderSchedule, edits: renderEdits, pco: renderPco, roaming: renderRoaming, tasks: renderTasks, troubleshooting: renderTroubleshooting, support: renderSupport };
 
   /* ============================================================== EVENTS */
   view.addEventListener("change", function (e) {
