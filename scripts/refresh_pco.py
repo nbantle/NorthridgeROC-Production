@@ -14,9 +14,10 @@ ST = '34139'  # Rochester Campus service type (same as the PCO-Updates script)
 BASE = os.environ.get('PCO_BASE', 'https://api.planningcenteronline.com/services/v2')
 OUT = os.path.join(os.path.dirname(__file__), '..', 'data', 'pco.js')
 
-# Which PCO teams go in which category on the page. A team goes in the first
-# category whose keywords appear in its name (case doesn't matter). Teams that
-# match nothing are left off the page and listed in the run log.
+# Which PCO teams go in which category on the page. Anyone whose position has
+# "choir" in it goes to Choir, whatever their team. Otherwise a team goes in the
+# first category whose keywords appear in its name (case doesn't matter). Teams
+# that match nothing are left off the page and listed in the run log.
 CATEGORIES = [
     ('Choir', ['choir']),
     ('Audio', ['audio', 'sound', 'foh', 'monitor mix']),
@@ -49,7 +50,11 @@ def short_name(full):
     return f'{first} {parts[-1][0]}.' if len(parts) > 1 else first
 
 
-def category(team_name):
+def category(team_name, position=''):
+    # Choir can be a position inside another team (e.g. "Choir" on the Music Team),
+    # so check the position for choir before falling back to the team name.
+    if 'choir' in (position or '').lower():
+        return 'Choir'
     t = (team_name or '').lower()
     for name, words in CATEGORIES:
         if any(w in t for w in words):
@@ -104,7 +109,7 @@ def main():
 
         def add(team_id, row):
             team = teams.get(team_id, '')
-            cat = category(team)
+            cat = category(team, row.get('position'))
             if not cat:
                 unmatched.add(team or '(no team)')
                 return
