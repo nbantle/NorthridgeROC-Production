@@ -600,14 +600,30 @@
       html += '<div class="card empty"><p>No one is scheduled on the Audio, Production, Music or Choir teams yet.</p></div>';
     }
     html += '<div class="roster">' + P.groups.map(function (g) {
+      // Label positions from a team whose name isn't the group's (e.g. "Stage Crew" under Production).
+      var label = function (m) {
+        var pos = m.position || m.team || "";
+        var team = m.team || "";
+        return team && team.toLowerCase().indexOf(g.name.toLowerCase()) < 0 && pos.toLowerCase().indexOf(team.toLowerCase()) < 0 &&
+          !(g.name === "Choir" && /choir/i.test(pos)) ? team + " · " + pos : pos;
+      };
+      // Fold unfilled spots for the same position into one row ("8 open").
+      var rows = [], openAt = {};
+      g.members.forEach(function (m) {
+        if (m.status !== "open") { rows.push(m); return; }
+        var k = label(m);
+        if (openAt[k] !== undefined) rows[openAt[k]].count++;
+        else { openAt[k] = rows.length; rows.push({ status: "open", position: m.position, team: m.team, count: 1 }); }
+      });
       return '<section class="card roster-card"><div class="edit-block-head"><span class="tile-icon"><i data-lucide="' + (PCO_ICONS[g.name] || "users") + '"></i></span>' +
         "<h2>" + esc(g.name) + '</h2><span class="meta">' + g.members.filter(function (m) { return m.status !== "open"; }).length + "</span></div>" +
-        g.members.map(function (m) {
-          return '<div class="roster-row' + (m.status === "open" ? " is-open" : "") + '">' +
-            '<span class="roster-pos">' + esc(m.position || m.team || "") + "</span>" +
-            '<span class="roster-name">' + (m.status === "open" ? "Not filled" : esc(m.name)) + "</span>" +
+        rows.map(function (m) {
+          var open = m.status === "open";
+          return '<div class="roster-row' + (open ? " is-open" : "") + '">' +
+            '<span class="roster-pos">' + esc(label(m)) + "</span>" +
+            '<span class="roster-name">' + (open ? (m.count > 1 ? m.count + " spots not filled" : "Not filled") : esc(m.name)) + "</span>" +
             (m.status === "pending" ? '<span class="tag quiet" title="Hasn\'t accepted yet in Planning Center">Pending</span>'
-              : m.status === "open" ? '<span class="tag">Open</span>' : "<span></span>") +
+              : open ? '<span class="tag">' + (m.count > 1 ? m.count + " open" : "Open") + "</span>" : "<span></span>") +
             "</div>";
         }).join("") + "</section>";
     }).join("") + "</div>";
