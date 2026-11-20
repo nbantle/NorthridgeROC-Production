@@ -3,7 +3,7 @@
 window.ROC = window.ROC || {};
 
 ROC.pco = {
-  "updated": "2026-11-20T00:43:24+00:00",
+  "updated": "2026-11-20T00:44:21+00:00",
   "plan": {
     "id": "92652894",
     "dates": "November 19 & 22, 2026",
@@ -186,6 +186,59 @@ ROC.pco = {
           "team": "Music Team"
         },
         {
+          "position": "Drums",
+          "name": "Brandon W.",
+          "status": "confirmed",
+          "team": "Music Team"
+        },
+        {
+          "position": "Keys",
+          "name": "Ben L.",
+          "status": "pending",
+          "team": "Music Team"
+        },
+        {
+          "position": "Lead Electric Guitar",
+          "name": "Chris S.",
+          "status": "confirmed",
+          "team": "Music Team"
+        },
+        {
+          "position": "Vocal 1",
+          "name": "Eddie R.",
+          "status": "confirmed",
+          "team": "Music Team"
+        },
+        {
+          "position": "Vocal 2",
+          "name": "Natasha H.",
+          "status": "confirmed",
+          "team": "Music Team"
+        },
+        {
+          "position": "Vocal 3",
+          "name": "Rachael D.",
+          "status": "confirmed",
+          "team": "Music Team"
+        },
+        {
+          "position": "Vocal 4",
+          "name": "Bruce B.",
+          "status": "confirmed",
+          "team": "Music Team"
+        },
+        {
+          "position": "Vocal 5",
+          "name": "Isabella V.",
+          "status": "confirmed",
+          "team": "Music Team"
+        }
+      ]
+    },
+    {
+      "name": "Choir",
+      "members": [
+        {
           "position": "Choir",
           "name": "Abbey R.",
           "status": "confirmed",
@@ -333,54 +386,6 @@ ROC.pco = {
           "position": "Choir",
           "name": "",
           "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Drums",
-          "name": "Brandon W.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Keys",
-          "name": "Ben L.",
-          "status": "pending",
-          "team": "Music Team"
-        },
-        {
-          "position": "Lead Electric Guitar",
-          "name": "Chris S.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Vocal 1",
-          "name": "Eddie R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Vocal 2",
-          "name": "Natasha H.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Vocal 3",
-          "name": "Rachael D.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Vocal 4",
-          "name": "Bruce B.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Vocal 5",
-          "name": "Isabella V.",
-          "status": "confirmed",
           "team": "Music Team"
         }
       ]
