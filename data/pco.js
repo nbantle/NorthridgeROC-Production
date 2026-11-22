@@ -3,35 +3,31 @@
 window.ROC = window.ROC || {};
 
 ROC.pco = {
-  "updated": "2026-11-21T20:26:49+00:00",
+  "updated": "2026-11-22T20:16:59+00:00",
   "plan": {
-    "id": "92652894",
-    "dates": "November 19 & 22, 2026",
-    "title": "To Be Present",
+    "id": "92652895",
+    "dates": "November 29, 2026",
+    "title": "To Have Joy",
     "series": "Tis The Season",
     "times": [
       {
-        "startsAt": "2026-11-19T23:45:00Z",
+        "startsAt": "2026-11-29T13:30:00Z",
         "name": null
       },
       {
-        "startsAt": "2026-11-22T13:30:00Z",
+        "startsAt": "2026-11-29T14:45:00Z",
         "name": null
       },
       {
-        "startsAt": "2026-11-22T14:45:00Z",
+        "startsAt": "2026-11-29T16:00:00Z",
         "name": null
       },
       {
-        "startsAt": "2026-11-22T16:00:00Z",
-        "name": null
-      },
-      {
-        "startsAt": "2026-11-22T17:15:00Z",
+        "startsAt": "2026-11-29T17:15:00Z",
         "name": null
       }
     ],
-    "url": "https://services.planningcenteronline.com/plans/92652894"
+    "url": "https://services.planningcenteronline.com/plans/92652895"
   },
   "groups": [
     {
@@ -39,14 +35,14 @@ ROC.pco = {
       "members": [
         {
           "position": "FOH Engineer",
-          "name": "Nate B.",
+          "name": "David G.",
           "status": "confirmed",
           "team": "Audio Team"
         },
         {
           "position": "Stream Engineer",
-          "name": "Tyler W.",
-          "status": "confirmed",
+          "name": "Jacob G.",
+          "status": "pending",
           "team": "Audio Team"
         }
       ]
@@ -57,12 +53,18 @@ ROC.pco = {
         {
           "position": "1st Service",
           "name": "Lisa B.",
-          "status": "confirmed",
+          "status": "pending",
+          "team": "Stage Crew"
+        },
+        {
+          "position": "1st Service",
+          "name": "",
+          "status": "open",
           "team": "Stage Crew"
         },
         {
           "position": "2nd Service",
-          "name": "Kim S.",
+          "name": "Caleb R.",
           "status": "confirmed",
           "team": "Stage Crew"
         },
@@ -86,31 +88,31 @@ ROC.pco = {
         },
         {
           "position": "Director",
-          "name": "Stephanie S.",
+          "name": "Logan B.",
           "status": "confirmed",
           "team": "Production Team"
         },
         {
           "position": "Fixed Camera",
-          "name": "Ashley K.",
+          "name": "Aaron M.",
           "status": "confirmed",
           "team": "Production Team"
         },
         {
           "position": "Fixed Camera",
-          "name": "Brittany C.",
+          "name": "Josh C.",
           "status": "confirmed",
           "team": "Production Team"
         },
         {
           "position": "Fixed Camera",
-          "name": "Niasha H.",
+          "name": "Julia C.",
           "status": "confirmed",
           "team": "Production Team"
         },
         {
           "position": "Graphics",
-          "name": "Sam L.",
+          "name": "Onix R.",
           "status": "confirmed",
           "team": "Production Team"
         },
@@ -128,44 +130,20 @@ ROC.pco = {
         },
         {
           "position": "Producer",
-          "name": "Jon M.",
-          "status": "confirmed",
-          "team": "Production Team"
-        },
-        {
-          "position": "Producer",
-          "name": "",
-          "status": "open",
-          "team": "Production Team"
-        },
-        {
-          "position": "Roaming Camera",
-          "name": "Matt D.",
+          "name": "Bella G.",
           "status": "confirmed",
           "team": "Production Team"
         },
         {
           "position": "Roaming Camera",
-          "name": "Will D.",
+          "name": "Mackenzie B.",
           "status": "confirmed",
           "team": "Production Team"
         },
         {
           "position": "Roaming Camera",
-          "name": "",
-          "status": "open",
-          "team": "Production Team"
-        },
-        {
-          "position": "Training",
-          "name": "Ryan D.",
+          "name": "Zach B.",
           "status": "confirmed",
-          "team": "Production Team"
-        },
-        {
-          "position": "Training",
-          "name": "",
-          "status": "open",
           "team": "Production Team"
         }
       ]
@@ -174,218 +152,57 @@ ROC.pco = {
       "name": "Music",
       "members": [
         {
-          "position": "Acoustic Guitar",
-          "name": "Ben L.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
           "position": "Bass Guitar",
-          "name": "Amanda H.",
+          "name": "Javier F.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Drums",
-          "name": "Brandon W.",
+          "name": "Sterling N.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Keys",
-          "name": "Ben L.",
-          "status": "pending",
+          "name": "Brandon W.",
+          "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Lead Electric Guitar",
-          "name": "Chris S.",
+          "name": "Nate M.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Vocal 1",
-          "name": "Eddie R.",
+          "name": "Brittany M.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Vocal 2",
-          "name": "Natasha H.",
+          "name": "Ismael S.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Vocal 3",
-          "name": "Rachael D.",
+          "name": "Lindsey M.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
           "position": "Vocal 4",
-          "name": "Bruce B.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Vocal 5",
-          "name": "Isabella V.",
-          "status": "confirmed",
-          "team": "Music Team"
-        }
-      ]
-    },
-    {
-      "name": "Choir",
-      "members": [
-        {
-          "position": "Choir",
-          "name": "Abbey R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "David B.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Eli L.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Eliza P.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Ellie R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
           "name": "Erin C.",
           "status": "confirmed",
           "team": "Music Team"
         },
         {
-          "position": "Choir",
-          "name": "Joelle K.",
-          "status": "pending",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Joey R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Kim G.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Leilany V.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Melanie R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Nadiyah R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
+          "position": "Vocal 5",
           "name": "Tamesha B.",
           "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Tiffany D.",
-          "status": "pending",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Toyin O.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "Yaleni R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "✨Oliviyah R.",
-          "status": "confirmed",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
-          "team": "Music Team"
-        },
-        {
-          "position": "Choir",
-          "name": "",
-          "status": "open",
           "team": "Music Team"
         }
       ]
