@@ -3,7 +3,7 @@
 window.ROC = window.ROC || {};
 
 ROC.pco = {
-  "updated": "2026-11-24T01:36:13+00:00",
+  "updated": "2026-11-24T22:58:54+00:00",
   "plan": {
     "id": "92652895",
     "dates": "November 29, 2026",
@@ -201,8 +201,8 @@ ROC.pco = {
         },
         {
           "position": "Vocal 5",
-          "name": "",
-          "status": "open",
+          "name": "Melanie R.",
+          "status": "pending",
           "team": "Music Team"
         }
       ]
